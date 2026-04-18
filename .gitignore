@@ -1,0 +1,15 @@
+# Datos (muy pesados para GitHub)
+Churn_Modelling.csv
+*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+
+# Streamlit
+.streamlit/
+
+# VS Code
+.vscode/
