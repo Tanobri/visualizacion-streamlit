@@ -1,7 +1,4 @@
-# Datos (muy pesados para GitHub)
-Churn_Modelling.csv
-*.csv
-
+# (Se permite subir CSV porque el dataset es vital para la app)
 # Python
 __pycache__/
 *.py[cod]
