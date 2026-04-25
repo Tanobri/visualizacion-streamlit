@@ -69,9 +69,12 @@ with col1:
 
     """)
     
-    st.info("""
-    Los datos muestran que el 20.4% de los clientes ha abandonado el banco, advirtiendo una deserción severa y un claro problema de retención.
+    st.markdown("""
+    **Contexto del Dataset:** Análisis de 10,000 perfiles de clientes de una entidad bancaria multinacional ubicados en **Francia, España y Alemania**.  
+    
+    **¿Qué es el Churn?** Representa la tasa de abandono o cancelación de cuentas.  
     """)
+    st.warning("**Objetivo Principal:** Implementar una campaña de retención efectiva encontrando los sectores exactos de mayor riesgo.")
 
 with col2:
     st.plotly_chart(fig, use_container_width=True)
@@ -180,8 +183,9 @@ st.markdown("""
 # =========================
 # 6. INSIGHT
 # =========================
+st.markdown("**Impacto Geográfico:** El primer paso de nuestra campaña es entender dónde estamos perdiendo más clientes.")
 st.info("""
-Alemania presenta la tasa de abandono más alta (32.4%), duplicando a Francia y España, lo que sugiere un problema específico en ese mercado regional.
+Alemania presenta la tasa de abandono más alta (32.4%), duplicando a Francia y España. Identificar el país con mayor tasa de fuga nos permite priorizar la asignación de recursos y localizar la campaña de retención.
 """)
 
 st.markdown("""
@@ -197,15 +201,30 @@ import numpy as np
 import plotly.graph_objects as go
 
 # =========================
+# 0. FILTRO INTERACTIVO
+# =========================
+col_filter3, _ = st.columns([1, 2])
+with col_filter3:
+    pais_seleccionado3 = st.selectbox("Filtrar por País:", ["Todos los Países", "France", "Spain", "Germany"], key="age_filter")
+
+if pais_seleccionado3 == "Todos los Países":
+    df_age = df.copy()
+    country_label3 = "a nivel global"
+else:
+    df_age = df[df["Geography"] == pais_seleccionado3].copy()
+    country_label_es = "Francia" if pais_seleccionado3 == "France" else "España" if pais_seleccionado3 == "Spain" else "Alemania"
+    country_label3 = f"en {country_label_es}"
+
+# =========================
 # 1. BINS
 # =========================
 bins = np.arange(18, 90, 3)
-df["AgeBin"] = pd.cut(df["Age"], bins=bins)
+df_age["AgeBin"] = pd.cut(df_age["Age"], bins=bins)
 
 # =========================
 # 2. MÉTRICAS
 # =========================
-age_stats = df.groupby("AgeBin").agg(
+age_stats = df_age.groupby("AgeBin").agg(
     total=("Exited", "size"),
     churn=("Exited", "mean")
 ).reset_index()
@@ -313,8 +332,9 @@ st.plotly_chart(fig, use_container_width=True)
 # =========================
 # 7. INSIGHT
 # =========================
-st.info("""
-Los clientes entre 40 y 55 años presentan la mayor tasa de abandono, lo que indica un segmento crítico que requiere estrategias de retención específicas.
+st.markdown("**Impacto Demográfico:** Una campaña de retención no puede ser genérica; debe hablarle al grupo correcto.")
+st.info(f"""
+Los clientes entre 40 y 55 años **{country_label3}** presentan la mayor tasa de abandono. Determinar qué generaciones son más vulnerables nos permite personalizar el mensaje y los incentivos de la campaña.
 """)
 
 st.markdown("""
@@ -331,11 +351,26 @@ import pandas as pd
 import plotly.graph_objects as go
 
 # =========================
+# 0. FILTRO INTERACTIVO
+# =========================
+col_filter4, _ = st.columns([1, 2])
+with col_filter4:
+    pais_seleccionado4 = st.selectbox("Filtrar por País:", ["Todos los Países", "France", "Spain", "Germany"], key="finance_filter")
+
+if pais_seleccionado4 == "Todos los Países":
+    df_fin = df.copy()
+    country_label4 = "a nivel global"
+else:
+    df_fin = df[df["Geography"] == pais_seleccionado4].copy()
+    country_label_es4 = "Francia" if pais_seleccionado4 == "France" else "España" if pais_seleccionado4 == "Spain" else "Alemania"
+    country_label4 = f"en {country_label_es4}"
+
+# =========================
 # 1. GRUPOS (IGUAL QUE TENÍAS)
 # =========================
 
-q1 = df["EstimatedSalary"].quantile(0.3333)
-q2 = df["EstimatedSalary"].quantile(0.6666)
+q1 = df_fin["EstimatedSalary"].quantile(0.3333)
+q2 = df_fin["EstimatedSalary"].quantile(0.6666)
 
 def salary_group(x):
     if x <= q1:
@@ -353,8 +388,8 @@ def score_group(x):
     else:
         return "Alto (700-850)"
 
-df["SalaryGroup"] = df["EstimatedSalary"].apply(salary_group)
-df["ScoreGroup"] = df["CreditScore"].apply(score_group)
+df_fin["SalaryGroup"] = df_fin["EstimatedSalary"].apply(salary_group)
+df_fin["ScoreGroup"] = df_fin["CreditScore"].apply(score_group)
 
 # =========================
 # 🔥 ORDEN CORREGIDO (ÚNICO CAMBIO IMPORTANTE)
@@ -380,7 +415,7 @@ heatmap_data = []
 for y in y_order:
     row = []
     for x in x_order:
-        subset = df[(df["ScoreGroup"] == y) & (df["SalaryGroup"] == x)]
+        subset = df_fin[(df_fin["ScoreGroup"] == y) & (df_fin["SalaryGroup"] == x)]
         total = len(subset)
         exited = subset["Exited"].sum()
         rate = exited / total if total > 0 else 0
@@ -458,10 +493,11 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# 6. INSIGHT (IGUAL)
+# 6. INSIGHT
 # =========================
-st.info("""
-Los clientes con bajo score crediticio presentan mayor abandono sin importar su salario, lo que indica que el score es el principal factor de riesgo.
+st.markdown("**Impacto Económico:** ¿Afecta el poder adquisitivo o el historial de crédito en la decisión de abandonar el banco?")
+st.info(f"""
+El churn {country_label4} se concentra en los clientes con **Bajo Score Crediticio (300-500)**, sin importar su nivel de ingresos. Revelar los cuadrantes de alto riesgo nos permite crear ofertas económicas específicas (como mejores tasas) para evitar que se vayan.
 """)
 
 st.markdown("""
@@ -477,10 +513,25 @@ import plotly.graph_objects as go
 import pandas as pd
 
 # =========================
+# 0. FILTRO INTERACTIVO
+# =========================
+col_filter5, _ = st.columns([1, 2])
+with col_filter5:
+    pais_seleccionado5 = st.selectbox("Filtrar por País:", ["Todos los Países", "France", "Spain", "Germany"], key="tenure_filter")
+
+if pais_seleccionado5 == "Todos los Países":
+    df_ten = df.copy()
+    country_label5 = "a nivel global"
+else:
+    df_ten = df[df["Geography"] == pais_seleccionado5].copy()
+    country_label_es5 = "Francia" if pais_seleccionado5 == "France" else "España" if pais_seleccionado5 == "Spain" else "Alemania"
+    country_label5 = f"en {country_label_es5}"
+
+# =========================
 # 1. PROCESAMIENTO
 # =========================
 
-tenure_df = df.groupby("Tenure").agg(
+tenure_df = df_ten.groupby("Tenure").agg(
     total=("Exited", "count"),
     exited=("Exited", "sum")
 ).reset_index()
@@ -488,7 +539,7 @@ tenure_df = df.groupby("Tenure").agg(
 tenure_df["rate"] = tenure_df["exited"] / tenure_df["total"]
 
 # Promedio global
-global_rate = df["Exited"].mean()
+global_rate = df_ten["Exited"].mean()
 
 # =========================
 # 2. COLORES (MISMA LÓGICA)
@@ -618,11 +669,39 @@ st.plotly_chart(fig, use_container_width=True)
 # =========================
 # 7. INSIGHT
 # =========================
-
-st.info("""
-El abandono es más alto al inicio (problemas de onboarding), luego se estabiliza, y vuelve a aumentar en clientes antiguos, lo que puede indicar fatiga o competencia.
+st.markdown("**Ciclo de Vida del Cliente:** El momento en el que intervenimos es tan crucial como a quién le hablamos.")
+st.info(f"""
+El abandono {country_label5} es drástico en el Año Cero, indicando un fallo en el Onboarding. Posteriormente la tasa desciende demostrando estabilidad, solo para volver a fracturarse tras 8 años. Esto dicta exactamente en qué año de vida del cliente lanzar la campaña.
 """)
 st.markdown("""
     -----
     
     """)
+    
+# ==============================================================================
+# 💡 CONCLUSIÓN ESTRATÉGICA
+# ==============================================================================
+st.subheader("💡 Conclusión Estratégica")
+st.markdown("""
+**Síntesis del Proyecto:** En base al análisis visual realizado, hemos cruzado Geografía, Edad, Perfil Financiero y Tenencia.  
+**Plan de Acción:** A continuación se proponen 3 campañas de retención fundamentadas en datos (*Data-Driven*) para mitigar el Churn.
+""")
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.markdown("### 🛡️ Campaña 1: Onboarding Seguro")
+    st.success("**Público Objetivo:** Nuevos clientes (Año 0)")
+    st.write("Nuestra gráfica de Tenencia demostró un pico drástico de abandono en el primer año. Se propone un programa de acompañamiento y eliminación de cobros durante los primeros 12 meses.")
+
+with c2:
+    st.markdown("### 🎯 Campaña 2: Fidelización Senior")
+    st.success("**Público Objetivo:** 40 a 55 años, especialmente Alemania")
+    st.write("El cruce de Edad y Geografía reveló que los adultos maduros alemanes son los más propensos a irse. Proponemos ofrecer productos de inversión con tasas preferenciales o seguros.")
+
+with c3:
+    st.markdown("### 💳 Campaña 3: Alivio Financiero")
+    st.success("**Público Objetivo:** Score Crediticio Bajo (300-500)")
+    st.write("El mapa de calor confirmó que el bajo puntaje impulsa el abandono sin importar el salario. Implementaremos un plan reestructurando sus deudas para evitar la fuga a la competencia.")
+
+st.markdown("<br><br>", unsafe_allow_html=True)
