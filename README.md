@@ -45,7 +45,7 @@ streamlit run streamlit_app.py
 ```
 
 ## Despliegue
-URL en producción: [Enlace a la app desplegada en Streamlit Community Cloud]
+URL en producción: https://visualizacion-app-yp6zkjsjgh7saa6ovmjif4.streamlit.app
 
 ## Autores
 Obrian Sanchez
